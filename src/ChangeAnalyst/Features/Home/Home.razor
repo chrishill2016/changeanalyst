@@ -1,0 +1,67 @@
+@page "/"
+@using ChangeAnalyst.Services.Api
+@using ChangeAnalyst.Shared.Auth
+@inject IApiClient Api
+@inject AppConfig Config
+
+<PageTitle>Change Analyst</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Change Analyst</MudText>
+<MudText Class="mb-6">
+    Describe the change you need. An AI analyst checks it for missing detail, works out which systems are affected
+    and turns it into clear requirements for the change team to review.
+</MudText>
+
+<AuthorizeView>
+    <Authorized>
+        <MudPaper Class="pa-4" Outlined="true">
+            <MudText Typo="Typo.h6">Signed in as @context.User.Identity?.Name</MudText>
+            @if (Config.ApiConfigured)
+            {
+                <MudButton Class="mt-3" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.NetworkCheck"
+                           Disabled="_checking" OnClick="CheckApiAsync">Check connection to the server</MudButton>
+                @if (_me is not null)
+                {
+                    <MudAlert Class="mt-3" Severity="Severity.Success">
+                        Connected. Roles: @(_me.Roles.Count > 0 ? string.Join(", ", _me.Roles) : "none assigned")
+                    </MudAlert>
+                }
+                @if (_error is not null)
+                {
+                    <MudAlert Class="mt-3" Severity="Severity.Error">@_error</MudAlert>
+                }
+            }
+        </MudPaper>
+    </Authorized>
+    <NotAuthorized>
+        @if (Config.AuthConfigured)
+        {
+            <MudAlert Severity="Severity.Info">Sign in with your work account to submit change requests.</MudAlert>
+        }
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private UserInfo? _me;
+    private string? _error;
+    private bool _checking;
+
+    private async Task CheckApiAsync()
+    {
+        _checking = true;
+        _me = null;
+        _error = null;
+        try
+        {
+            _me = await Api.GetMeAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not reach the server: {ex.Message}";
+        }
+        finally
+        {
+            _checking = false;
+        }
+    }
+}

@@ -1,0 +1,42 @@
+@inherits LayoutComponentBase
+@inject ThemeService ThemeService
+
+<MudThemeProvider Theme="ThemeService.Theme" IsDarkMode="ThemeService.IsDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Dense="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                       OnClick="() => _drawerOpen = !_drawerOpen" aria-label="Toggle menu" />
+        <MudText Typo="Typo.h6" Class="ml-2">Change Analyst</MudText>
+        <MudSpacer />
+        <SyncStatusIndicator />
+        <MudIconButton Icon="@(ThemeService.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                       Color="Color.Inherit" OnClick="ToggleThemeAsync" aria-label="Toggle dark mode" />
+        <LoginDisplay />
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="1">
+        <NavMenu />
+    </MudDrawer>
+
+    <MudMainContent>
+        <UpdateBanner />
+        <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+            @Body
+        </MudContainer>
+        <MudText Typo="Typo.caption" Align="Align.Center" Class="app-footer d-block pb-4">
+            Change Analyst v@(AppVersion.Current)
+        </MudText>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    protected override async Task OnInitializedAsync() => await ThemeService.LoadAsync();
+
+    private async Task ToggleThemeAsync() => await ThemeService.ToggleAsync();
+}
