@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ChangeAnalyst.Api/ChangeAnalyst.Api.csproj" />
+    <Project Path="src/ChangeAnalyst.Shared/ChangeAnalyst.Shared.csproj" />
+    <Project Path="src/ChangeAnalyst/ChangeAnalyst.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ChangeAnalyst.Api.Tests/ChangeAnalyst.Api.Tests.csproj" />
+    <Project Path="tests/ChangeAnalyst.Tests/ChangeAnalyst.Tests.csproj" />
+  </Folder>
+</Solution>

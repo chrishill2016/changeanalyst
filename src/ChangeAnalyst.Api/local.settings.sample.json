@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "Auth__TenantId": "<tenant-id>",
+    "Auth__Audience": "api://<changeanalyst-api-client-id>",
+    "Auth__ClientId": "<changeanalyst-api-client-id>"
+  },
+  "Host": {
+    "CORS": "https://localhost:5001",
+    "CORSCredentials": false
+  }
+}

@@ -1,0 +1,27 @@
+@using ChangeAnalyst.Services.Pwa
+@implements IDisposable
+@inject IUpdateService UpdateService
+
+@if (UpdateService.IsUpdateAvailable)
+{
+    <MudAlert Severity="Severity.Info" Dense="true" Square="true" Class="mud-width-full">
+        <div class="d-flex align-center gap-4">
+            <span>New version available – refresh to update.</span>
+            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" OnClick="RefreshAsync">Refresh</MudButton>
+        </div>
+    </MudAlert>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        UpdateService.UpdateAvailable += OnUpdateAvailable;
+        await UpdateService.InitializeAsync();
+    }
+
+    private void OnUpdateAvailable() => InvokeAsync(StateHasChanged);
+
+    private Task RefreshAsync() => UpdateService.ApplyUpdateAsync();
+
+    public void Dispose() => UpdateService.UpdateAvailable -= OnUpdateAvailable;
+}

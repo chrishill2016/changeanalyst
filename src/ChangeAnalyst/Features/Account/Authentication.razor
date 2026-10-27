@@ -1,0 +1,16 @@
+@page "/authentication/{action}"
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject AppConfig Config
+
+@if (Config.AuthConfigured)
+{
+    <RemoteAuthenticatorView Action="@Action" />
+}
+else
+{
+    <MudAlert Severity="Severity.Warning">Sign-in is not configured yet.</MudAlert>
+}
+
+@code {
+    [Parameter] public string? Action { get; set; }
+}

@@ -1,0 +1,81 @@
+@using ChangeAnalyst.Services.Sync
+@implements IDisposable
+@inject ISyncService SyncService
+@inject ISnackbar Snackbar
+
+<MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" AriaLabel="Sync status"
+         Label="@StatusText" StartIcon="@StatusIcon" Color="@StatusColor" Size="Size.Small" Variant="Variant.Text"
+         data-testid="sync-status">
+    <ChildContent>
+        <div class="pa-3" style="min-width: 240px">
+            <MudText Typo="Typo.body2" data-testid="sync-connection">@(Status.IsOnline ? "Online" : "Offline")</MudText>
+            <MudText Typo="Typo.body2" data-testid="sync-pending">Changes waiting to sync: @Status.PendingChanges</MudText>
+            <MudText Typo="Typo.body2" data-testid="sync-last">Last synced: @LastSyncText</MudText>
+            @if (!Status.IsRemoteConfigured)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Warning">Server sync isn't configured – data stays on this device.</MudText>
+            }
+            else if (Status.LastError is not null)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error">@Status.LastError</MudText>
+            }
+            <MudButton Class="mt-2" Size="Size.Small" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Sync"
+                       Disabled="@(!CanSync)" OnClick="SyncNowAsync">Sync now</MudButton>
+        </div>
+    </ChildContent>
+</MudMenu>
+
+@code {
+    private SyncStatus Status => SyncService.Status;
+
+    private bool CanSync => Status is { IsRemoteConfigured: true, IsOnline: true, IsSyncing: false };
+
+    private string StatusText => Status switch
+    {
+        { IsOnline: false } => Status.PendingChanges > 0 ? $"Offline · {Status.PendingChanges}" : "Offline",
+        { IsSyncing: true } => "Syncing…",
+        { IsRemoteConfigured: false } => "Local only",
+        { PendingChanges: > 0 } => $"{Status.PendingChanges} pending",
+        { LastError: not null } => "Sync error",
+        _ => "Synced",
+    };
+
+    private string StatusIcon => Status switch
+    {
+        { IsOnline: false } => Icons.Material.Filled.CloudOff,
+        { IsSyncing: true } => Icons.Material.Filled.Sync,
+        { IsRemoteConfigured: false } => Icons.Material.Filled.PhoneAndroid,
+        { LastError: not null } => Icons.Material.Filled.SyncProblem,
+        { PendingChanges: > 0 } => Icons.Material.Filled.CloudUpload,
+        _ => Icons.Material.Filled.CloudDone,
+    };
+
+    private Color StatusColor => Status switch
+    {
+        { IsOnline: false } => Color.Warning,
+        { LastError: not null } => Color.Error,
+        _ => Color.Inherit,
+    };
+
+    private string LastSyncText => Status.LastSuccessfulSync?.ToLocalTime().ToString("g") ?? "never";
+
+    protected override async Task OnInitializedAsync()
+    {
+        SyncService.StatusChanged += OnStatusChanged;
+        SyncService.Notified += OnNotified;
+        await SyncService.InitializeAsync();
+    }
+
+    private Task SyncNowAsync() => SyncService.SyncAsync();
+
+    private void OnStatusChanged() => InvokeAsync(StateHasChanged);
+
+    private void OnNotified(SyncNotification notification) => InvokeAsync(() =>
+        Snackbar.Add(notification.Message, notification.IsError ? Severity.Error : Severity.Success));
+
+    public void Dispose()
+    {
+        SyncService.StatusChanged -= OnStatusChanged;
+        SyncService.Notified -= OnNotified;
+    }
+}

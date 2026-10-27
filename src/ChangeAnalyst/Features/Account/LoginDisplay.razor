@@ -1,0 +1,30 @@
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager Navigation
+@inject AppConfig Config
+
+@if (!Config.AuthConfigured)
+{
+    <MudTooltip Text="Add the Entra ID settings to appsettings.json to enable sign-in">
+        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Sign-in not configured</MudChip>
+    </MudTooltip>
+}
+else
+{
+    <AuthorizeView>
+        <Authorized>
+            <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" AriaLabel="Account">
+                <MudMenuItem Disabled="true">@context.User.Identity?.Name</MudMenuItem>
+                <MudMenuItem OnClick="LogOut" Icon="@Icons.Material.Filled.Logout">Sign out</MudMenuItem>
+            </MudMenu>
+        </Authorized>
+        <NotAuthorized>
+            <MudButton Variant="Variant.Outlined" Color="Color.Inherit" Size="Size.Small" OnClick="LogIn">Sign in</MudButton>
+        </NotAuthorized>
+    </AuthorizeView>
+}
+
+@code {
+    private void LogIn() => Navigation.NavigateToLogin("authentication/login");
+
+    private void LogOut() => Navigation.NavigateToLogout("authentication/logout");
+}
